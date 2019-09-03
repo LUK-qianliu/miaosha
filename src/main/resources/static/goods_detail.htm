@@ -48,8 +48,14 @@
         		<button class="btn btn-primary btn-block" type="submit" id="buyButton">立即秒杀</button>
         		<input type="hidden" name="goodsId"  id="goodsId" />
         	</form>-->
-        	<button class="btn btn-primary btn-block" type="button" id="buyButton"onclick="doMiaosha()">立即秒杀</button>
-        	<input type="hidden" name="goodsId"  id="goodsId" />
+            <div class="row">
+                <div class="form-inline">
+                    <img id="verifyCodeImg" width="80" height="32"  style="display:none" onclick="refreshVerifyCode()"/>
+                    <input id="verifyCode"  class="form-control" style="display:none"/>
+                    <button class="btn btn-primary btn-block" type="button" id="buyButton"onclick="getMiaoshaPath()">立即秒杀</button>
+                </div>
+            </div>
+            <input type="hidden" name="goodsId"  id="goodsId" />
         </td>
      </tr>
      <tr>  
@@ -69,9 +75,79 @@
 </body>
 <script>
 
-function doMiaosha(){
+    /**
+     * 获取商品是否被秒杀
+     * @param goodsId
+     */
+    function getMiaoshaResult(goodsId){
+    g_showLoading();
+    $.ajax({
+        url:"/miaosha/result",
+        type:"GET",
+        data:{
+            goodsId:$("#goodsId").val(),
+        },
+        success:function(data){
+            if(data.code == 0){
+                var result = data.data;
+                if(result < 0){
+                    layer.msg("对不起，秒杀失败");
+                }else if(result == 0){//继续轮询
+                    setTimeout(function(){
+                        getMiaoshaResult(goodsId);
+                    }, 500);
+                }else{
+                    layer.confirm("恭喜你，秒杀成功！查看订单？", {btn:["确定","取消"]},
+                        function(){
+                            window.location.href="/order_detail.htm?orderId="+result;
+                        },
+                        function(){
+                            layer.closeAll();
+                        });
+                }
+            }else{
+                layer.msg(data.msg);
+            }
+        },
+        error:function(){
+            layer.msg("客户端请求有误");
+        }
+    });
+}
+
+/**
+ * 秒杀之前先判断验证码和path令牌是否正确
+ * */
+    function getMiaoshaPath(){
+        var goodsId = $("#goodsId").val();
+        g_showLoading();
+        $.ajax({
+            url:"/miaosha/path",
+            type:"GET",
+            data:{
+                goodsId:goodsId,
+                verifyCode:$("#verifyCode").val()
+            },
+            success:function(data){
+                if(data.code == 0){
+                    var path = data.data;
+                    doMiaosha(path);
+                }else{
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.msg("客户端请求有误");
+            }
+        });
+    }
+
+    /**
+     * 开始秒杀
+     */
+    function doMiaosha(path){
 	$.ajax({
-		url:"/miaosha/do_miaosha",
+		url:"/miaosha/do_miaosha/"+path,
 		type:"POST",
 		data:{
 			goodsId:$("#goodsId").val(),
@@ -79,7 +155,8 @@ function doMiaosha(){
 		success:function(data){
 			if(data.code == 0){
 			    //alert(data.data.id)
-				window.location.href="/order_detail.htm?orderId="+data.data.id;
+				//window.location.href="/order_detail.htm?orderId="+data.data.id;
+                getMiaoshaResult($("#goodsId").val());
 			}else{
                 //alert(data.data.toString());
 				layer.msg(data.msg);
@@ -151,11 +228,21 @@ function countDown(){
 		if(timeout){
 			clearTimeout(timeout);
 		}
-		$("#miaoshaTip").html("秒杀进行中");
+        $("#miaoshaTip").html("秒杀进行中");
+        $("#verifyCodeImg").attr("src", "/miaosha/verifyCode?goodsId="+$("#goodsId").val());//生成验证码
+        $("#verifyCodeImg").show();
+        $("#verifyCode").show();
 	}else{//秒杀已经结束
 		$("#buyButton").attr("disabled", true);
 		$("#miaoshaTip").html("秒杀已经结束");
+        $("#verifyCodeImg").hide();
+        $("#verifyCode").hide();
 	}
+}
+
+//刷新验证码
+function refreshVerifyCode(){
+    $("#verifyCodeImg").attr("src", "/miaosha/verifyCode?goodsId="+$("#goodsId").val()+"&timestamp="+new Date().getTime());
 }
 
 // 获取url参数

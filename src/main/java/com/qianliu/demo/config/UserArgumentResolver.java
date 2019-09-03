@@ -4,6 +4,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.qianliu.demo.access.UserContext;
 import com.qianliu.demo.domain.MiaoshaUser;
 import com.qianliu.demo.service.MiaoshaUserService;
 import org.apache.commons.lang3.StringUtils;
@@ -48,20 +49,21 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 	 */
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-		// 取出request和response
-		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-		HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
-
-		// 取出传入的参数和cookie中是否有有“token”
-		String paramToken = request.getParameter(MiaoshaUserService.COOKI_NAME_TOKEN);
-		String cookieToken = getCookieValue(request, MiaoshaUserService.COOKI_NAME_TOKEN);
-		//logger.info("paramToken:=========================="+paramToken);
-		//logger.info("cookieToken:==========================="+cookieToken);
-		if(StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
-			return null;
-		}
-		String token = StringUtils.isEmpty(paramToken)?cookieToken:paramToken;
-		return userService.getUserByToken(response, token);
+//		// 取出request和response
+//		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
+//		HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
+//
+//		// 取出传入的参数和cookie中是否有有“token”
+//		String paramToken = request.getParameter(MiaoshaUserService.COOKI_NAME_TOKEN);
+//		String cookieToken = getCookieValue(request, MiaoshaUserService.COOKI_NAME_TOKEN);
+//		//logger.info("paramToken:=========================="+paramToken);
+//		//logger.info("cookieToken:==========================="+cookieToken);
+//		if(StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
+//			return null;
+//		}
+//		String token = StringUtils.isEmpty(paramToken)?cookieToken:paramToken;
+//		return userService.getUserByToken(response, token);
+		return UserContext.getUser();
 	}
 
 	/**
@@ -70,14 +72,14 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 	 * @param cookiName
 	 * @return
 	 */
-	private String getCookieValue(HttpServletRequest request, String cookiName) {
-		Cookie[]  cookies = request.getCookies();
-		for(Cookie cookie : cookies) {
-			if(cookie.getName().equals(cookiName)) {
-				return cookie.getValue();
-			}
-		}
-		return null;
-	}
+//	private String getCookieValue(HttpServletRequest request, String cookiName) {
+//		Cookie[]  cookies = request.getCookies();
+//		for(Cookie cookie : cookies) {
+//			if(cookie.getName().equals(cookiName)) {
+//				return cookie.getValue();
+//			}
+//		}
+//		return null;
+//	}
 
 }

@@ -68,4 +68,13 @@ public class MQSender {
         // 发送带头部的message消息体
         amqpTemplate.convertAndSend(MQConfig.HEADERS_EXCHANGE, "", obj);
     }
+
+    /**
+     * 将秒杀的订单信息发送到rabbitMQ
+     */
+    public void sendMiaoshaMessage(Object message){
+        String msg = RedisService.beanToString(message);
+        logger.info("发送消息："+msg);
+        amqpTemplate.convertAndSend(MQConfig.QUEUE_Miaosha, msg); // 向MQConfig.QUEUE_NAME发送数据message
+    }
 }

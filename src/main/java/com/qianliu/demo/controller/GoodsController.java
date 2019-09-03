@@ -127,7 +127,7 @@ public class GoodsController {
 //    }
 
     /**
-     * 改造页面详情页
+     * 改造页面详情页：改成静态页面以后，就不需要缓存html
      * @param request
      * @param response
      * @param model

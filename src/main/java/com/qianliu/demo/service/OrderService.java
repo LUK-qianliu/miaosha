@@ -42,7 +42,7 @@ public class OrderService {
 	 * @return
 	 */
 	public OrderInfo createOrder(MiaoshaUser user, GoodsVo goods) {
-		// 初始化orederInfo
+		// 插入orederInfo
 		OrderInfo orderInfo = new OrderInfo();
 		orderInfo.setCreateDate(new Date());
 		orderInfo.setDeliveryAddrId(0L);
@@ -53,17 +53,17 @@ public class OrderService {
 		orderInfo.setOrderChannel(1);
 		orderInfo.setStatus(0);// 0表示卖出
 		orderInfo.setUserId(user.getId());
+		orderDao.insert(orderInfo);
 
-		// 将orderInfo插入数据库
-		long orderId = orderDao.insert(orderInfo);
+		// 将MiaoshaOrderInfo插入数据库
 		MiaoshaOrder miaoshaOrder = new MiaoshaOrder();
 		miaoshaOrder.setGoodsId(goods.getId());
-		miaoshaOrder.setOrderId(orderId);
+		miaoshaOrder.setOrderId(orderInfo.getId());
 		miaoshaOrder.setUserId(user.getId());
 		orderDao.insertMiaoshaOrder(miaoshaOrder);
 
 		// 插入缓存
-		redisService.set(OrderKey.getMiaoshaOrderByUidGid,user.getId()+"_"+goods.getId(),miaoshaOrder);
+		redisService.set(OrderKey.getMiaoshaOrderByUidGid,user.getId()+"_"+goods.getId(),orderDao.getMiaoshaOrderByUserIdGoodsId(user.getId(),goods.getId()));
 
 		return orderInfo;
 	}

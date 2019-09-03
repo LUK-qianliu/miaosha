@@ -1,5 +1,5 @@
 # miaosha
-秒杀项目
+秒杀项目 博客介绍此项目:https://blog.csdn.net/qq_35688140/article/details/100522023
 ## 1.此项目的技术介绍
 （1）redis做对象缓存：（因为redis毕竟有网络开销，有些地方可以使用conCurrentHashMap代替redis）
 
